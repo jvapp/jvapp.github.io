@@ -7,24 +7,29 @@
 //function to instantiate the Leaflet map
 function createMap(){
     //create the map
-    var map = new L.map('map', {
-        center: [20, 0],
-        zoom: 2
-        //fullscreenControl: true,
-    
-});
-    //add OSM base tilelayer
-    
-    L.tileLayer('https://api.mapbox.com/styles/v1/jvapp/cje7pscbnhjn52rp7h0wvxpqg/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoianZhcHAiLCJhIjoiY2pka2d5eDVjMDBuajJ6cDNvengzcmg2NCJ9.Ekp8rJfHls_6LjGrCWMp4Q', {
-    }).addTo(map);
-    //call getData function
+    var light = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoianZhcHAiLCJhIjoiY2pka2d5eDVjMDBuajJ6cDNvengzcmg2NCJ9.Ekp8rJfHls_6LjGrCWMp4Q', {attribution: "mapbox"}),
+
+        dark   = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoianZhcHAiLCJhIjoiY2pka2d5eDVjMDBuajJ6cDNvengzcmg2NCJ9.Ekp8rJfHls_6LjGrCWMp4Q', { attribution: "mapbox"});
+
+    var map = L.map('map', {
+        center: [20, 30],
+        zoom: 2,
+        minZoom: 3,
+        layers: [light]
+    });
     getData(map);
+
+    var baseMaps = {
+        "Light": light,
+        "Dark": dark
+    };
+    L.control.layers(baseMaps).addTo(map);
 };
 
 //calculate the radius of each proportional symbol
 function calcPropRadius(attValue) {
     //scale factor to adjust symbol size evenly
-    var scaleFactor = .00075;
+    var scaleFactor = .0006;
     //area based on attribute value and scale factor
     var area = attValue * scaleFactor;
     //radius calculated based on area
@@ -50,9 +55,9 @@ function createSequenceControls(map, attributes){
             $(container).append('<button class="skip" id="reverse" title="Reverse">Reverse</button>');
             $(container).append('<button class="skip" id="forward" title="Forward">Skip</button>');
 
-          $(container).on('mousedown dblclick pointerdown', function(e){
-     L.DomEvent.stopPropagation(e);
-});
+            $(container).on('mousedown dblclick pointerdown', function(e){
+                L.DomEvent.stopPropagation(e);
+            });
             return container;
         }
     });
@@ -119,7 +124,7 @@ function createLegend(map, attributes){
             $(container).append('<div id="temporal-legend">')
 
             //Step 1: start attribute legend svg string
-            var svg = '<svg id="attribute-legend" width="160px" height="60px">';
+            var svg = '<svg id="attribute-legend" width="200px" height="1560px">';
             //array of circle names to base loop on
             var circles = {
                 max: 10,
@@ -141,7 +146,7 @@ function createLegend(map, attributes){
         }
     });
     map.addControl(new LegendControl());
-    updateLegend(map, attributes);
+    updateLegend(map, attributes[0]);
 };
 function getCircleValues(map, attribute){
     //start with min at highest possible and max at lowest possible number
@@ -189,13 +194,13 @@ function updateLegend(map, attribute){
         var radius = calcPropRadius(circleValues[key]);
 
         $('#'+key).attr({
-            cy: 49 - radius,
+            cy: 69 - radius,
             r: radius
         });
 
         //Step 4: add legend text
         $('#'+key+'-text').text(Math.round(circleValues[key]*100)/100);
-    };
+    }
 };
 //Above Example 3.8...Step 3: build an attributes array from the data
 function processData(data){
@@ -298,7 +303,7 @@ function Popup(properties, attribute, layer, radius){
 //Step 2: Import GeoJSON data
 function getData(map){
     //load the data
-    $.ajax("data/RefPopPer.geojson", {
+    $.ajax("data/data1.geojson", {
         dataType: "json",
         success: function(response){
             //create an attributes array
@@ -307,7 +312,6 @@ function getData(map){
             //call function to create proportional symbols, sequence control, update symbols, and create legend
             createPropSymbols(response, map, attributes);
             createSequenceControls(map, attributes);
-            updatePropSymbols(map, attributes);
             createLegend(map, attributes);
         }
     });

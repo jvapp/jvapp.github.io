@@ -108,7 +108,7 @@ html, body, #map{
 
  #map {
     height: 600px;
-    width: 80%;
+    width: 100%;
     display: inline-block;
 }
 
@@ -122,7 +122,7 @@ html, body, #map{
     border: solid gray 1px;
 }
 .legend-control-container {
-    width: 200px;
+    width: 250px;
     height: 175px;
     background-color: rgba(255,255,255,0.8);
     padding: 1px;
@@ -131,6 +131,7 @@ html, body, #map{
     border: solid gray 1px;
     
 }
+
 
 .range-slider {
     width: 200px;
