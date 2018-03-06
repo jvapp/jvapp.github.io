@@ -97,13 +97,82 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+html, body, #map{
+    width: 100%;
+    height: 100%;
+}
 
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
 
+ #map {
+    height: 600px;
+    width: 80%;
+    display: inline-block;
+}
 
+.sequence-control-container {
+    width: 350px;
+    height: 30px;
+    background-color: rgba(255,255,255,0.8);
+    padding: 10px;
+    line-height: 45px;
+    text-align: center;
+    border: solid gray 1px;
+}
+.legend-control-container {
+    width: 200px;
+    height: 175px;
+    background-color: rgba(255,255,255,0.8);
+    padding: 1px;
+    line-height: 100px;
+    text-align: center;
+    border: solid gray 1px;
+    
+}
 
+.range-slider {
+    width: 200px;
+}
 
+body {
+    padding: 0;
+    margin: 0;
+}
+html, body, #map {
+    height: 100%;
+}
+/*
+#panel {
+    width: 16%;
+    padding: 20px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+}
 
+#panel {
+    width: 26%;
+    padding: 20px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    line-height: 42px;
+}
+*/
 
+.range-slider {
+    width: 50%;
+}
+
+#forward {
+    float: right;
+}
+
+#reverse {
+    float: left;
+}
 
 
 
