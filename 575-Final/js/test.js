@@ -85,8 +85,8 @@
             setChart(csvData, colorScale);
 
             createDropdown(csvData);
-            createRadioButton(point)
-            //loadAttackPoints(map, point);
+           
+            loadAttackPoints(map, point);
 
            // setLabel(props);
         };
@@ -232,23 +232,37 @@
             .attr("class", "chart");
 
         //create a rectangle for chart background fill
-        var chartBackground = chart.append("rect")
-            .attr("class", "chartBackground")
-            .attr("width", chartInnerWidth)
-            .attr("height", chartInnerHeight)
-            .attr("transform", translate);
+//        var chartBackground = chart.append("rect")
+//            .attr("class", "chartBackground")
+//            .attr("width", chartInnerWidth)
+//            .attr("height", chartInnerHeight)
+//            .attr("transform", translate);
 
         //set bars for each province
-        var bars = chart.selectAll(".bar")
-            .data(csvData)
-            .enter()
-            .append("rect")
-            .sort(function(a, b){
-                return b[expressed]-a[expressed]
-            })
-            .attr("class", function(d){
-                return "bar " + d.NAME_ENGLI;
-            })
+          //set bars for each province
+    var bars = chart.selectAll(".bar")
+        .data(csvData)
+        .enter()
+        .append("rect")
+        .sort(function(a, b){
+            return a[expressed]-b[expressed]
+        })
+        .attr("class", function(d){
+            return "bar " + d.NAME_ENGLI;
+        })
+        .attr("width", chartInnerWidth / csvData.length - 1)
+        .attr("x", function(d, i){
+            return i * (chartInnerWidth / csvData.length) + leftPadding;
+        })
+        .attr("height", function(d, i){
+            return 463 - yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d, i){
+            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+        })
+        .style("fill", function(d){
+            return choropleth(d, colorScale);
+        })
             .attr("width", chartInnerWidth / csvData.length - 1)
             .on("mouseover", highlight)
             .on("mouseout", dehighlight)
@@ -263,57 +277,47 @@
         //create a text element for the chart title
         var chartTitle = chart.append("text")
             .attr("x", 40)
-            .attr("y", 40)
+            .attr("y", 0)
             .attr("class", "chartTitle")
             .text("Number of Variable " + expressed[0] + " in each region");
 
-        //create vertical axis generator
-        var yAxis = d3.axisLeft()
-            .scale(yScale)
-
-
-        //place axis
-        var axis = chart.append("g")
-            .attr("class", "axis")
-            .attr("transform", translate)
-            .call(yAxis);
 
         //create frame for chart border
-        var chartFrame = chart.append("rect")
-            .attr("class", "chartFrame")
-            .attr("width", chartInnerWidth)
-            .attr("height", chartInnerHeight)
-            .attr("transform", translate);
+//        var chartFrame = chart.append("rect")
+//            .attr("class", "chartFrame")
+//            .attr("width", chartInnerWidth)
+//            .attr("height", chartInnerHeight)
+//            .attr("transform", translate);
 
             //set bar positions, heights, and colors
             updateChart(bars, csvData.length, colorScale);
 
         //annotate bars with attribute value text
-//            var numbers = chart.selectAll(".numbers")
-//                .data(csvData)
-//                .enter()
-//                .append("text")
-//                .sort(function(a, b){
-//                    return b[expressed]-a[expressed]
-//                })
-//                .attr("class", function(d){
-//                    return "numbers " + d.NAME_1;
-//                })
-//                .attr("text-anchor", "middle")
-//                .attr("x", function(d, i){
-//                    var fraction = chartWidth / csvData.length;
-//                    return i * fraction + (fraction - 1) / 2;
-//                })
-//                .attr("y", function(d){
-//                    return chartHeight - yScale(parseFloat(d[expressed])) + 15;
-//                })
-//                .text(function(d){
-//                    return d[expressed];
-//                });
+            var numbers = chart.selectAll(".numbers")
+                .data(csvData)
+                .enter()
+                .append("text")
+                .sort(function(a, b){
+                    return a[expressed]-b[expressed]
+                })
+                .attr("class", function(d){
+                    return "numbers " + d.NAME_1;
+                })
+                .attr("text-anchor", "middle")
+                .attr("x", function(d, i){
+                    var fraction = chartWidth / csvData.length;
+                    return i * fraction + (fraction - 1) / 2;
+                })
+                .attr("y", function(d){
+                    return chartHeight - yScale(parseFloat(d[expressed])) -10;
+                })
+                .text(function(d){
+                    return d[expressed];
+                });
 
     };
     
-    function createRadioButton(point){
+    function createRadioButton(map, point){
             var w= 285;
             var h= 130;
             var svg= d3.select("body")
@@ -328,15 +332,15 @@
                 .attr("height","100%")
                 .attr("x",0)
                 .attr("y",0)
-                .attr("fill","#DAC99A")
+                .attr("fill","#808080")
 
             //text that the radio button will toggle
-            var number= svg.append("text")
-                .attr("id","numberToggle")
-                .attr("x",20)
-                .attr("y",90)
-                .attr("fill","green")
-                .attr("font-size",24)
+            var label= svg.append("text")
+             
+                .attr("x",70)
+                .attr("y",30)
+                .attr("fill","white")
+                .attr("font-size",20)
                 .text("Display Attack Location")
 
             //container for all buttons
@@ -353,7 +357,7 @@
 
             //groups for each button (which will hold a rect and text)
             var buttonGroups= allButtons.selectAll("g.button")
-                .data(point)
+                .data(labels)
                 .enter()
                 .append("g")
                 .attr("class","button")
@@ -418,19 +422,29 @@
         button.select("rect")
                 .attr("fill",pressedColor)
     }
-    
-    function loadAttackPoints(map, point){
-        
-          //create Albers equal area conic projection centered on Sahel
+    function setProjection(){
+            //create Albers equal area conic projection centered on Sahel
         var projection = d3.geoMercator()
-         .center([15, 15])
+            .center([15, 15])
             .rotate([-2, 0, 0])
             .scale(1000)
             .translate([width / 2, height / 2]);
 
         var path = d3.geoPath()
             .projection(projection);
-            map.selectAll("cirlce")
+    }
+    function loadAttackPoints(map, point){
+        
+          //create Albers equal area conic projection centered on Sahel
+        var projection = d3.geoMercator()
+            .center([15, 15])
+            .rotate([-2, 0, 0])
+            .scale(1000)
+            .translate([width / 2, height / 2]);
+
+        var path = d3.geoPath()
+            .projection(projection)
+            .selectAll("cirlce")
             .data(point)
             .enter()
             .append("circle")
@@ -494,7 +508,7 @@
         var bars = d3.selectAll(".bar")
             //re-sort bars
             .sort(function(a, b){
-                return b[expressed] - a[expressed];
+                return a[expressed] - b[expressed];
             })
             .transition() //add animation
             .delay(function(d, i){
@@ -512,10 +526,10 @@
         })
         //size/resize bars
             .attr("height", function(d, i){
-            return 463 - yScale(parseFloat(d[expressed]));
+            return chartHeight- yScale(parseFloat(d[expressed]));
         })
-            .attr("y", function(d, i){
-            return yScale(parseFloat(d[expressed])) + topBottomPadding;
+            .attr("y", function(d){
+                return chartHeight - yScale(parseFloat(d[expressed]))       
         })
         //color/recolor bars
             .style("fill", function(d){
